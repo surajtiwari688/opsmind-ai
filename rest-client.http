@@ -1,0 +1,51 @@
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+
+{
+  "id": 1003,
+  "title": "High CPU Usage",
+  "service": "opsmind-api",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "description": "CPU utilization exceeded 85 percent"
+}
+###
+POST http://localhost:8080/api/deployments
+Content-Type: application/json
+
+{
+  "id": 5003,
+  "application": "opsmind-api",
+  "version": "1.1.0",
+  "environment": "development",
+  "status": "SUCCESS",
+  "deployedBy": "azure-devops"
+}
+
+###
+
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+
+{
+  "id": 1004,
+  "title": "Database Connection Issue",
+  "service": "opsmind-api",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "description": "Application is unable to connect to database"
+}
+
+###
+
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+
+{
+  "id": 1005,
+  "title": "High CPU",
+  "service": "opsmind-api",
+  "severity": "ABC",
+  "status": "OPEN",
+  "description": "CPU utilization is too high"
+}
