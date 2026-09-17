@@ -5,6 +5,19 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+
+  - script: |
+      echo "Current Directory:"
+      pwd
+
+      echo ""
+      echo "Files in Current Directory:"
+      ls -la
+
+      echo ""
+      echo "All Project Files:"
+      find . maxdepth 3 -type f | sort
+    displayName: 'Check Repository Structure'
   - script: |
       java -version
       echo "JAVA_HOME is set to $JAVA_HOME"
