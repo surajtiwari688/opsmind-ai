@@ -46,15 +46,24 @@ steps:
     displayName: 'Run Unit Tests'
 
   - bash: |
+      echo "Resolving Maven Dependencies..."
+
+      ./mvnw dependency:resolve
+    workingDirectory: 'opsmind-api'
+    displayName: 'Resolve Maven Dependencies'
+
+  - bash: |
       echo "Starting Trivy Filesystem vulnerability Scan..."
 
       docker run --rm \
         -v "$(pwd):/workspace" \
+        -v "$(echo $HOME)/.m2:/root/.m2" \
         aquasec/trivy:latest \
         fs \
         --scanners vuln \
         --severity HIGH,CRITICAL \
         --ignore-unfixed \
+        --offline-scan \
         /workspace/opsmind-api
 
     displayName: 'Run Trivy Filesystem Vulnerability Scan'
