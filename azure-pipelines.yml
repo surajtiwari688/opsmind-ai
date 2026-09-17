@@ -46,15 +46,15 @@ steps:
     displayName: 'Run Unit Tests'
 
   - bash: |
-    echo "Starting Trivy Filesystem vulnerability Scan..."
+      echo "Starting Trivy Filesystem vulnerability Scan..."
 
-    docker run --rm \
-      -v "$(pwd):/workspace" \
-      aquasec/trivy:latest \
-      fs \
-      --scanners vuln \
-      --severity HIGH,CRITICAL \
-      --ignore-unfixed \
-      /workspace/opsmind-api
+      docker run --rm \
+        -v "$(pwd):/workspace" \
+        aquasec/trivy:latest \
+        fs \
+        --scanners vuln \
+        --severity HIGH,CRITICAL \
+        --ignore-unfixed \
+        /workspace/opsmind-api
 
     displayName: 'Run Trivy Filesystem Vulnerability Scan'
