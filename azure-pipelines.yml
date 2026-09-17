@@ -29,23 +29,23 @@ steps:
       jdkSourceOption: 'PreInstalled'
     displayName: 'Install Java 21'
 
-  - script: |
+  - bash: |
       java -version
       echo "JAVA_HOME is set to $JAVA_HOME"
     displayName: 'Check Java Version'
 
-  - script: |
+  - bash: |
       chmod +x mvnw
       ./mvnw clean package -DskipTests
     workingDirectory: 'opsmind-api'
     displayName: 'Build spring Boot Application'
 
-  - script: |
+  - bash: |
       ./mvnw test
     workingDirectory: 'opsmind-api'
     displayName: 'Run Unit Tests'
 
-  - script: |
+  - bash: |
     echo "Starting Trivy Filesystem vulnerability Scan..."
 
     docker run --rm \
