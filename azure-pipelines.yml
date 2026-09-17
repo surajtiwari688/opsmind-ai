@@ -1,0 +1,24 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - task: JavaToolInstaller@0
+    displayName: 'Install Java 11'
+    inputs:
+      versionSpec: '21'
+      jdkArchitecture: 'x64'
+      jdkSourceOption: 'PreInstalled'
+
+  - script: |
+      cd opsmind-ai
+      chmod +x mvnw
+      ./mvnw clean package -DskipTests
+    displayName: 'Build spring Boot Application'
+
+  - script: |
+      cd opsmind-ai
+      ./mvnw test
+    displayName: 'Run UnitTests'
