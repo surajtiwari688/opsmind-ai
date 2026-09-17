@@ -6,30 +6,41 @@ pool:
 
 steps:
 
-  - script: |
-      echo "Current Directory:"
-      pwd
+  # - script: |
+  #     echo "Current Directory:"
+  #     pwd
 
-      echo ""
-      echo "Files in Current Directory:"
-      ls -la
+  #     echo ""
+  #     echo "Files in Current Directory:"
+  #     ls -la
 
-      echo ""
-      echo "All Project Files:"
-      find . maxdepth 3 -type f | sort
-    displayName: 'Check Repository Structure'
+  #     echo ""
+  #     echo "All Project Files:"
+  #     find . maxdepth 3 -type f | sort
+  #   displayName: 'Check Repository Structure'
+
+  - checkout: self
+    displayName: 'Checkout OpsMind-AI Repository'
+
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '21'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'PreInstalled'
+    displayName: 'Install Java 21'
+
   - script: |
       java -version
       echo "JAVA_HOME is set to $JAVA_HOME"
     displayName: 'Check Java Version'
 
   - script: |
-      cd opsmind-ai
       chmod +x mvnw
       ./mvnw clean package -DskipTests
+    workingDirectory: 'opsmind-api'
     displayName: 'Build spring Boot Application'
 
   - script: |
-      cd opsmind-ai
       ./mvnw test
-    displayName: 'Run UnitTests'
+    workingDirectory: 'opsmind-api'
+    displayName: 'Run Unit Tests'
