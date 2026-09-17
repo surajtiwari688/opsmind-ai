@@ -44,3 +44,17 @@ steps:
       ./mvnw test
     workingDirectory: 'opsmind-api'
     displayName: 'Run Unit Tests'
+
+  - script: |
+    echo "Starting Trivy Filesystem vulnerability Scan..."
+
+    docker run --rm \
+      -v "$(pwd):/workspace" \
+      aquasec/trivy:latest \
+      fs \
+      --scanners vuln \
+      --severity HIGH,CRITICAL \
+      --ignore-unfixed \
+      /workspace/opsmind-api
+
+    displayName: 'Run Trivy Filesystem Vulnerability Scan'
