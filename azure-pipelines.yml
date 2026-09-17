@@ -5,12 +5,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - task: JavaToolInstaller@0
-    displayName: 'Install Java 11'
-    inputs:
-      versionSpec: '21'
-      jdkArchitecture: 'x64'
-      jdkSourceOption: 'PreInstalled'
+  - script: |
+      java -version
+      echo "JAVA_HOME is set to $JAVA_HOME"
+    displayName: 'Check Java Version'
 
   - script: |
       cd opsmind-ai
