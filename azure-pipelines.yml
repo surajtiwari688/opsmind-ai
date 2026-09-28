@@ -92,3 +92,18 @@ steps:
         opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID}
 
     displayName: 'Run Trivy Docker Image Vulnerability Scan'
+
+  - task: AzureCLI@2
+    displayName: 'Push Docker Image to ACR'
+    inputs:
+      azureSubscription: 'sc-opsmind-azure'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "Logging in to Azure Container Registry..."
+
+        az acr login --name opsmindaiacr2026
+        echo "Pushing Docker Image to ACR..."
+        docker push opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID}
+        echo "Docker Image pushed to ACR successfully."
+
