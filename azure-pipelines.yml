@@ -89,6 +89,6 @@ steps:
         --ignore-unfixed \
         --exit-code 1 \
         --timeout 10m \
-        opsmindaiacr2026.azurecr.io/opsmind-api:${Build.BuildId}
+        opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID}
 
     displayName: 'Run Trivy Docker Image Vulnerability Scan'
