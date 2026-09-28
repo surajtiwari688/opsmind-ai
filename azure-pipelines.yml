@@ -77,3 +77,18 @@ steps:
         opsmind-api
     
     displayName: 'Build Docker Image for Spring Boot Application'
+
+  - bash: |
+      echo "Starting Trivy Docker Image vulnerability Scan..."
+
+      docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        aquasec/trivy:latest \
+        image \
+        --severity HIGH,CRITICAL \
+        --ignore-unfixed \
+        --exit-code 1 \
+        --timeout 10m \
+        opsmindaiacr2026.azurecr.io/opsmind-api:${Build.BuildId}
+
+    displayName: 'Run Trivy Docker Image Vulnerability Scan'
