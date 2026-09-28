@@ -69,3 +69,11 @@ steps:
         /workspace/opsmind-api
 
     displayName: 'Run Trivy Filesystem Vulnerability Scan'
+
+  - bash: |
+      echo "Building Docker Image for Spring Boot Application..."
+      docker build \
+        -t opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID} \
+        opsmind-api
+    
+    displayName: 'Build Docker Image for Spring Boot Application'
