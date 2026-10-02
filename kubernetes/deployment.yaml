@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opsmind-api
+  labels:
+    app: opsmind-api
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: opsmind-api
+  template:
+    metadata:
+      labels:
+        app: opsmind-api
+
+    spec:
+      containers:
+        - name: opsmind-api
+          image: opsmind-api:v2
+
+          envFrom:
+            - configMapRef:
+                name: opsmind-api-config
+            - secretRef:
+                name: opsmind-api-secret
+
+          ports:
+            - containerPort: 8080
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10

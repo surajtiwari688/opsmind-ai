@@ -35,3 +35,11 @@ build/
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.*
+
+# Kubernetes / Secrets
+*.secret.yaml
+*.secret.yml
+secrets.yaml
+secret.yaml
+.env
+.env.*

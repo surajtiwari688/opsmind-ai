@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opsmind-api-config
+
+data:
+  APP_ENV: "local-kubernetes"
+  APP_NAME: "opsmind-api"
