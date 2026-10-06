@@ -1,12 +1,11 @@
-trigger: 
+trigger:
   - main
 pr: none
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 steps:
-
   # - script: |
   #     echo "Current Directory:"
   #     pwd
@@ -21,37 +20,37 @@ steps:
   #   displayName: 'Check Repository Structure'
 
   - checkout: self
-    displayName: 'Checkout OpsMind-AI Repository'
+    displayName: "Checkout OpsMind-AI Repository"
 
   - task: JavaToolInstaller@0
     inputs:
-      versionSpec: '21'
-      jdkArchitectureOption: 'x64'
-      jdkSourceOption: 'PreInstalled'
-    displayName: 'Install Java 21'
+      versionSpec: "21"
+      jdkArchitectureOption: "x64"
+      jdkSourceOption: "PreInstalled"
+    displayName: "Install Java 21"
 
   - bash: |
       java -version
       echo "JAVA_HOME is set to $JAVA_HOME"
-    displayName: 'Check Java Version'
+    displayName: "Check Java Version"
 
   - bash: |
       chmod +x mvnw
       ./mvnw clean package -DskipTests
-    workingDirectory: 'opsmind-api'
-    displayName: 'Build spring Boot Application'
+    workingDirectory: "opsmind-api"
+    displayName: "Build spring Boot Application"
 
   - bash: |
       ./mvnw test
-    workingDirectory: 'opsmind-api'
-    displayName: 'Run Unit Tests'
+    workingDirectory: "opsmind-api"
+    displayName: "Run Unit Tests"
 
   - bash: |
       echo "Resolving Maven Dependencies..."
 
       ./mvnw dependency:resolve
-    workingDirectory: 'opsmind-api'
-    displayName: 'Resolve Maven Dependencies'
+    workingDirectory: "opsmind-api"
+    displayName: "Resolve Maven Dependencies"
 
   - bash: |
       echo "Starting Trivy Filesystem vulnerability Scan..."
@@ -68,15 +67,15 @@ steps:
         --offline-scan \
         /workspace/opsmind-api
 
-    displayName: 'Run Trivy Filesystem Vulnerability Scan'
+    displayName: "Run Trivy Filesystem Vulnerability Scan"
 
   - bash: |
       echo "Building Docker Image for Spring Boot Application..."
       docker build \
         -t opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID} \
         opsmind-api
-    
-    displayName: 'Build Docker Image for Spring Boot Application'
+
+    displayName: "Build Docker Image for Spring Boot Application"
 
   - bash: |
       echo "Starting Trivy Docker Image vulnerability Scan..."
@@ -91,14 +90,14 @@ steps:
         --timeout 10m \
         opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID}
 
-    displayName: 'Run Trivy Docker Image Vulnerability Scan'
+    displayName: "Run Trivy Docker Image Vulnerability Scan"
 
   - task: AzureCLI@2
-    displayName: 'Push Docker Image to ACR'
+    displayName: "Push Docker Image to ACR"
     inputs:
-      azureSubscription: 'sc-opsmind-azure'
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
+      azureSubscription: "sc-opsmind-azure"
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
       inlineScript: |
         echo "Logging in to Azure Container Registry..."
 
@@ -107,3 +106,28 @@ steps:
         docker push opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID}
         echo "Docker Image pushed to ACR successfully."
 
+  - task: AzureCLI@2
+    displayName: "Deploy Application to AKS"
+    inputs:
+      azureSubscription: "sc-opsmind-azure"
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+
+        echo "Getting AKS Credentials..."
+
+        az aks get-credentials --resource-group rg-opsmind-ai --name opsmind-aks --overwrite-existing
+
+        echo "Updating Kubernetes Deployment with new Docker Image..."
+
+        kubectl set image deployment/opsmind-api opsmind-api=opsmindaiacr2026.azurecr.io/opsmind-api:${BUILD_BUILDID}
+
+        echo "Waiting for Deployment to Rollout..."
+
+        kubectl rollout status deployment/opsmind-api --timeout=180s
+
+        echo "Checking Pods Status..."
+
+        kubectl get pods -o wide
+
+        echo "Deployment completed successfully."
