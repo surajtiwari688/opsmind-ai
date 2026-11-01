@@ -63,6 +63,7 @@ jobs:
           echo "Starting Trivy Filesystem vulnerability Scan..."
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/workspace" \
+            -v "$HOME/.m2:/root/.m2" \
             aquasec/trivy:latest \
             fs \
             --scanners vuln \
