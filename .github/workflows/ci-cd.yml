@@ -50,6 +50,19 @@ jobs:
         run: |
           ./mvnw test
 
+      # 11. SonarCloud code quality analysis
+      - name: SonarCloud Analysis
+        working-directory: opsmind-api
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "Starting SonarCloud Code Quality Analysis..."
+          ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=surajtiwari688_opsmind-ai \
+            -Dsonar.organization=surajtiwari688 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.qualitygate.wait=true
+
       # 5. Resolve Maven Dependencies
       - name: Resolve Maven Dependencies
         working-directory: opsmind-api
