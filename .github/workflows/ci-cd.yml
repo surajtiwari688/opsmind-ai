@@ -1,0 +1,107 @@
+name: OpsMind AI - CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/opsmind-api
+
+jobs:
+  build-test-scan-publish:
+    name: Build, Test, Scan and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout source code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Java 21
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          cache-dependency-path: opsmind-api/pom.xml
+
+      - name: Verify Java Version
+        run: |
+          java -version
+          echo "JAVA_HOME is set to $JAVA_HOME"
+
+      # 3. Build Spring Boot Application
+      - name: Build Spring Boot Application
+        working-directory: opsmind-api
+        run: |
+          chmod +x mvnw
+          ./mvnw clean package -DskipTests
+
+      # 4. Run Unit Tests
+      - name: Run Unit Tests
+        working-directory: opsmind-api
+        run: |
+          ./mvnw test
+
+      # 5. Resolve Maven Dependencies
+      - name: Resolve Maven Dependencies
+        working-directory: opsmind-api
+        run: |
+          echo "Resolving Maven Dependencies..."
+          ./mvnw dependency:resolve
+
+      # 6. Run Trivy Filesystem Vulnerability Scan
+      - name: Run Trivy Filesystem Vulnerability Scan
+        run: |
+          echo "Starting Trivy Filesystem vulnerability Scan..."
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/workspace" \
+            aquasec/trivy:latest \
+            fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            /workspace/opsmind-api
+
+      # 7. Build Docker Image for Spring Boot Application
+      - name: Build Docker Image for Spring Boot Application
+        run: |
+          echo "Building Docker Image for Spring Boot Application..."
+          docker build \
+            -t ${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            ./opsmind-api
+
+      # 8. Run Trivy Docker Image Vulnerability Scan
+      - name: Run Trivy Docker Image Vulnerability Scan
+        run: |
+          echo "Starting Trivy Docker Image vulnerability Scan..."
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest \
+            image \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            ${{ env.IMAGE_NAME }}:${{ github.run_number }}
+
+      # 9. Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 10. Publish Docker Image to GitHub Container Registry
+      - name: Publish Docker Image to GitHub Container Registry
+        run: |
+          echo "Publishing Docker Image to GitHub Container Registry..."
+          docker push ${{ env.IMAGE_NAME }}:${{ github.run_number }}
